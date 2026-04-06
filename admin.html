@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Liste des Présences</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #3e2723 0%, #5d4037 50%, #4e342e 100%);
+            font-family: 'Lato', sans-serif;
+            padding: 20px;
+        }
+
+        .container {
+            background: #f5f0eb;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            max-width: 600px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #6d4c41 0%, #4e342e 100%);
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            color: #f5f0eb;
+            font-weight: 400;
+        }
+
+        .login-section, .admin-section {
+            padding: 30px;
+        }
+
+        .login-section h2, .admin-section h2 {
+            font-family: 'Cormorant Garamond', serif;
+            color: #4e342e;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .login-section input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #bcaaa4;
+            border-radius: 15px;
+            font-size: 1rem;
+            font-family: 'Lato', sans-serif;
+            margin-bottom: 15px;
+            background: #fff;
+        }
+
+        .login-section input:focus {
+            outline: none;
+            border-color: #6d4c41;
+        }
+
+        .login-section button {
+            width: 100%;
+            background: linear-gradient(135deg, #6d4c41 0%, #4e342e 100%);
+            color: #f5f0eb;
+            border: none;
+            padding: 15px;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            font-family: 'Lato', sans-serif;
+        }
+
+        .login-section button:hover {
+            opacity: 0.9;
+        }
+
+        .error-msg {
+            display: none;
+            color: #c62828;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        .error-msg.active {
+            display: block;
+        }
+
+        .admin-section {
+            display: none;
+        }
+
+        .admin-section.active {
+            display: block;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 25px;
+            gap: 15px;
+        }
+
+        .stat-box {
+            background: #efebe9;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            flex: 1;
+        }
+
+        .stat-box .number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #6d4c41;
+        }
+
+        .stat-box .label {
+            font-size: 0.85rem;
+            color: #8d6e63;
+            margin-top: 5px;
+        }
+
+        .guest-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .guest-item {
+            background: #efebe9;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+
+        .guest-item .names {
+            color: #4e342e;
+            font-size: 1.05rem;
+            font-weight: 600;
+            white-space: pre-line;
+        }
+
+        .guest-item .timestamp {
+            color: #8d6e63;
+            font-size: 0.8rem;
+            margin-top: 8px;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #8d6e63;
+            padding: 40px;
+        }
+
+        .empty-state .icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        .btn-back, .btn-clear {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Lato', sans-serif;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .btn-back {
+            background: transparent;
+            color: #6d4c41;
+            border: 2px solid #a1887f;
+            text-decoration: none;
+        }
+
+        .btn-back:hover {
+            background: #efebe9;
+        }
+
+        .btn-clear {
+            background: #c62828;
+            color: white;
+            border: none;
+            margin-left: 10px;
+        }
+
+        .btn-clear:hover {
+            background: #b71c1c;
+        }
+
+        .logout-row {
+            text-align: center;
+        }
+
+        .decorations {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .coffee-element {
+            position: absolute;
+            font-size: 35px;
+            opacity: 0.15;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .coffee-element:nth-child(1) { top: 5%; left: 3%; animation-delay: 0s; }
+        .coffee-element:nth-child(2) { top: 15%; right: 5%; animation-delay: 1.5s; }
+        .coffee-element:nth-child(3) { bottom: 20%; left: 8%; animation-delay: 3s; }
+        .coffee-element:nth-child(4) { bottom: 10%; right: 3%; animation-delay: 4.5s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(-3deg); }
+            50% { transform: translateY(-15px) rotate(3deg); }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 { font-size: 1.6rem; }
+            .stats { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="decorations">
+        <span class="coffee-element">☕</span>
+        <span class="coffee-element">🧸</span>
+        <span class="coffee-element">🍼</span>
+        <span class="coffee-element">✨</span>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🔒 Administration</h1>
+        </div>
+
+        <div class="login-section" id="loginSection">
+            <h2>Liste des Présences</h2>
+            <input type="password" id="adminCode" placeholder="Entrez le code d'accès" onkeypress="if(event.key==='Enter')checkCode()">
+            <button onclick="checkCode()">Connexion</button>
+            <p class="error-msg" id="errorMsg">Code incorrect</p>
+        </div>
+
+        <div class="admin-section" id="adminSection">
+            <h2>📋 Liste des invités enregistrés</h2>
+            
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="number" id="totalRSVPs">0</div>
+                    <div class="label">Réponses</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number" id="totalGuests">0</div>
+                    <div class="label">Personnes</div>
+                </div>
+            </div>
+
+            <div class="guest-list" id="guestList">
+                <div class="empty-state" id="emptyState">
+                    <div class="icon">📭</div>
+                    <p>Aucune réponse pour le moment</p>
+                </div>
+            </div>
+
+            <div class="logout-row">
+                <a class="btn-back" href="baby-shower-invitation.html">← Retour à l'invitation</a>
+                <button class="btn-clear" onclick="clearAll()">Tout effacer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CORRECT_CODE = 'Tesla210599';
+
+        function checkCode() {
+            const code = document.getElementById('adminCode').value;
+            if (code === CORRECT_CODE) {
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('adminSection').classList.add('active');
+                loadRSVPs();
+            } else {
+                document.getElementById('errorMsg').classList.add('active');
+                document.getElementById('adminCode').value = '';
+            }
+        }
+
+        function loadRSVPs() {
+            const rsvps = JSON.parse(localStorage.getItem('babyShowerRSVPs') || '[]');
+            const guestList = document.getElementById('guestList');
+            const emptyState = document.getElementById('emptyState');
+            
+            document.getElementById('totalRSVPs').textContent = rsvps.length;
+            
+            let totalGuests = 0;
+            rsvps.forEach(rsvp => {
+                totalGuests += rsvp.names.split('\n').filter(n => n.trim()).length;
+            });
+            document.getElementById('totalGuests').textContent = totalGuests;
+
+            if (rsvps.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            guestList.innerHTML = rsvps.map((rsvp, index) => `
+                <div class="guest-item">
+                    <div class="names">${escapeHtml(rsvp.names)}</div>
+                    <div class="timestamp">Enregistré le ${rsvp.timestamp}</div>
+                </div>
+            `).join('') + `
+                <div class="empty-state" id="emptyState" style="display:none;">
+                    <div class="icon">📭</div>
+                    <p>Aucune réponse pour le moment</p>
+                </div>
+            `;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function clearAll() {
+            if (confirm('Êtes-vous sûr de vouloir effacer toutes les réponses?')) {
+                localStorage.removeItem('babyShowerRSVPs');
+                loadRSVPs();
+            }
+        }
+    </script>
+</body>
+</html>

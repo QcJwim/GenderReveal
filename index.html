@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gender Reveal / Shower</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #3e2723 0%, #5d4037 50%, #4e342e 100%);
+            font-family: 'Lato', sans-serif;
+            padding: 20px;
+        }
+
+        .card {
+            background: linear-gradient(180deg, #f5f0eb 0%, #ede3db 100%);
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            max-width: 500px;
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #6d4c41 0%, #4e342e 100%);
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: "☕";
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            font-size: 28px;
+            opacity: 0.6;
+        }
+
+        .header::after {
+            content: "🧸";
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 28px;
+            opacity: 0.6;
+        }
+
+        .header h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.5rem;
+            color: #f5f0eb;
+            margin-bottom: 8px;
+            font-weight: 400;
+        }
+
+        .header .subtitle {
+            font-size: 1rem;
+            color: #bcaaa4;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 300;
+        }
+
+        .content {
+            padding: 35px 30px;
+            text-align: center;
+        }
+
+        .baby-icon {
+            font-size: 70px;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .hosts {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            color: #4e342e;
+            margin-bottom: 25px;
+            font-style: italic;
+        }
+
+        .hosts strong {
+            font-style: normal;
+            font-weight: 600;
+        }
+
+        .message {
+            color: #5d4037;
+            margin: 20px 0;
+            line-height: 1.9;
+            font-size: 1.05rem;
+            font-weight: 300;
+        }
+
+        .details {
+            background: #efebe9;
+            border-radius: 20px;
+            padding: 25px 20px;
+            margin: 25px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-size: 1rem;
+            color: #4e342e;
+        }
+
+        .detail-item .icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, #6d4c41 0%, #4e342e 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .detail-item strong {
+            font-weight: 600;
+        }
+
+        .share-link {
+            display: inline-block;
+            margin: 15px 0;
+            color: #6d4c41;
+            text-decoration: none;
+            font-size: 0.95rem;
+            padding: 12px 25px;
+            border: 2px solid #a1887f;
+            border-radius: 30px;
+            transition: all 0.3s;
+            word-break: break-all;
+            max-width: 100%;
+        }
+
+        .share-link:hover {
+            background: #6d4c41;
+            color: #f5f0eb;
+            border-color: #6d4c41;
+        }
+
+        .gift-link {
+            display: inline-block;
+            margin: 15px 0;
+            color: #6d4c41;
+            text-decoration: none;
+            font-size: 0.95rem;
+            padding: 12px 25px;
+            border: 2px solid #a1887f;
+            border-radius: 30px;
+            transition: all 0.3s;
+        }
+
+        .gift-link:hover {
+            background: #6d4c41;
+            color: #f5f0eb;
+            border-color: #6d4c41;
+        }
+
+        .rsvp-section {
+            margin-top: 25px;
+        }
+
+        .rsvp-btn {
+            background: linear-gradient(135deg, #6d4c41 0%, #4e342e 100%);
+            color: #f5f0eb;
+            border: none;
+            padding: 15px 35px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 5px 20px rgba(78, 52, 46, 0.4);
+            font-family: 'Lato', sans-serif;
+        }
+
+        .rsvp-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(78, 52, 46, 0.5);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(62, 39, 35, 0.9);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #f5f0eb;
+            border-radius: 25px;
+            padding: 35px;
+            max-width: 400px;
+            width: 100%;
+            position: relative;
+        }
+
+        .modal-content h2 {
+            font-family: 'Cormorant Garamond', serif;
+            color: #4e342e;
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .modal-content label {
+            display: block;
+            color: #5d4037;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .modal-content textarea {
+            width: 100%;
+            height: 150px;
+            border: 2px solid #bcaaa4;
+            border-radius: 15px;
+            padding: 15px;
+            font-family: 'Lato', sans-serif;
+            font-size: 1rem;
+            resize: vertical;
+            margin-bottom: 20px;
+            background: #fff;
+        }
+
+        .modal-content textarea:focus {
+            outline: none;
+            border-color: #6d4c41;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .modal-buttons button {
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Lato', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+
+        .btn-confirm {
+            background: #6d4c41;
+            color: #f5f0eb;
+            border: none;
+        }
+
+        .btn-confirm:hover {
+            background: #4e342e;
+        }
+
+        .btn-cancel {
+            background: transparent;
+            color: #6d4c41;
+            border: 2px solid #a1887f;
+        }
+
+        .btn-cancel:hover {
+            background: #efebe9;
+        }
+
+        .success-message {
+            display: none;
+            background: #c8e6c9;
+            color: #2e7d32;
+            padding: 15px 20px;
+            border-radius: 15px;
+            margin-top: 15px;
+            font-size: 0.95rem;
+        }
+
+        .success-message.active {
+            display: block;
+        }
+
+        .footer {
+            background: #4e342e;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .footer p {
+            color: #bcaaa4;
+            font-size: 0.85rem;
+            font-weight: 300;
+        }
+
+        .footer .love {
+            margin-top: 8px;
+            font-size: 1.2rem;
+        }
+
+        .admin-link {
+            display: block;
+            margin-top: 15px;
+            color: #8d6e63;
+            text-decoration: none;
+            font-size: 0.75rem;
+            opacity: 0.6;
+        }
+
+        .admin-link:hover {
+            opacity: 1;
+        }
+
+        .decorations {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .coffee-element {
+            position: absolute;
+            font-size: 35px;
+            opacity: 0.15;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .coffee-element:nth-child(1) { top: 5%; left: 3%; animation-delay: 0s; }
+        .coffee-element:nth-child(2) { top: 15%; right: 5%; animation-delay: 1.5s; }
+        .coffee-element:nth-child(3) { bottom: 20%; left: 8%; animation-delay: 3s; }
+        .coffee-element:nth-child(4) { bottom: 10%; right: 3%; animation-delay: 4.5s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(-3deg); }
+            50% { transform: translateY(-15px) rotate(3deg); }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 { font-size: 2rem; }
+            .content { padding: 30px 20px; }
+            .baby-icon { font-size: 55px; }
+            .hosts { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="decorations">
+        <span class="coffee-element">☕</span>
+        <span class="coffee-element">🧸</span>
+        <span class="coffee-element">🍼</span>
+        <span class="coffee-element">✨</span>
+    </div>
+
+    <div class="card">
+        <div class="header">
+            <h1>Gender Reveal / Shower</h1>
+            <p class="subtitle">Vous êtes cordialement invités</p>
+        </div>
+        
+        <div class="content">
+            <span class="baby-icon">🧸</span>
+            
+            <p class="hosts">
+                Par <strong>Annabelle Héroux</strong> et <strong>Jimmy Perron</strong>
+            </p>
+            
+            <p class="message">
+                Deux cœurs qui battaient ensemble,<br>
+                Bientôt trois — notre petit trésor!
+            </p>
+            
+            <div class="details">
+                <div class="detail-item">
+                    <span class="icon">📅</span>
+                    <span>Samedi, 15 mai 2026</span>
+                </div>
+                <div class="detail-item">
+                    <span class="icon">⏰</span>
+                    <span>14h00 — 17h00</span>
+                </div>
+                <div class="detail-item">
+                    <span class="icon">📍</span>
+                    <span><strong>225 Rue Francoeur</strong><br>Shawinigan, QC G9P 2L6</span>
+                </div>
+            </div>
+            
+            <p class="message">
+                Joignez-vous à nous pour célébrer l'arrivée de notre petit rayon de soleil!
+            </p>
+
+            <a class="share-link" href="https://share.google/XE83oz0bxjaiLv7fD" target="_blank">
+                📍 Afficher l'adresse dans MAP
+            </a>
+
+            <br>
+
+            <a class="gift-link" href="https://www.milirose.com/gerer-liste-cadeaux-1256575.html" target="_blank">
+                🎁 Registre de cadeaux
+            </a>
+            
+            <div class="rsvp-section">
+                <button class="rsvp-btn" onclick="openModal()">Enregistrer ma présence</button>
+                <div class="success-message" id="successMsg">
+                    ✓ Merci! Votre présence a été enregistrée.
+                </div>
+            </div>
+
+            <a class="admin-link" href="admin.html">🔒</a>
+        </div>
+        
+        <div class="footer">
+            <p>Merci de confirmer avant le 1er mai 2026</p>
+            <p class="love">☕ 💕 ☕</p>
+        </div>
+    </div>
+
+    <div class="modal" id="rsvpModal">
+        <div class="modal-content">
+            <h2>Enregistrer ma présence</h2>
+            <label for="guestNames">Noms des personnes présentes :</label>
+            <textarea id="guestNames" placeholder="Ex: Marie Dupont&#10;Jean Tremblay&#10;Sophie Martin"></textarea>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+                <button class="btn-confirm" onclick="confirmRSVP()">Confirmer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openModal() {
+            document.getElementById('rsvpModal').classList.add('active');
+            document.getElementById('guestNames').value = '';
+        }
+
+        function closeModal() {
+            document.getElementById('rsvpModal').classList.remove('active');
+        }
+
+        function confirmRSVP() {
+            const names = document.getElementById('guestNames').value.trim();
+            if (names) {
+                let rsvps = JSON.parse(localStorage.getItem('babyShowerRSVPs') || '[]');
+                rsvps.push({
+                    names: names,
+                    timestamp: new Date().toLocaleString('fr-FR')
+                });
+                localStorage.setItem('babyShowerRSVPs', JSON.stringify(rsvps));
+                closeModal();
+                document.getElementById('successMsg').classList.add('active');
+                setTimeout(() => {
+                    document.getElementById('successMsg').classList.remove('active');
+                }, 4000);
+            } else {
+                alert('Veuillez entrer au moins un nom');
+            }
+        }
+
+        document.getElementById('rsvpModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
