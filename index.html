@@ -201,6 +201,12 @@
             box-shadow: 0 8px 25px rgba(78, 52, 46, 0.5);
         }
 
+        .rsvp-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -308,6 +314,31 @@
         }
 
         .success-message.active {
+            display: block;
+        }
+
+        .error-message {
+            display: none;
+            background: #ffcdd2;
+            color: #c62828;
+            padding: 15px 20px;
+            border-radius: 15px;
+            margin-top: 15px;
+            font-size: 0.95rem;
+        }
+
+        .error-message.active {
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            color: #6d4c41;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        .loading.active {
             display: block;
         }
 
@@ -431,9 +462,13 @@
             </a>
             
             <div class="rsvp-section">
-                <button class="rsvp-btn" onclick="openModal()">Enregistrer ma présence</button>
+                <button class="rsvp-btn" id="rsvpBtn" onclick="openModal()">Enregistrer ma présence</button>
+                <div class="loading" id="loading">Envoi en cours...</div>
                 <div class="success-message" id="successMsg">
                     ✓ Merci! Votre présence a été enregistrée.
+                </div>
+                <div class="error-message" id="errorMsg">
+                    ✗ Erreur lors de l'envoi. Veuillez réessayer.
                 </div>
             </div>
 
@@ -453,37 +488,56 @@
             <textarea id="guestNames" placeholder="Ex: Marie Dupont&#10;Jean Tremblay&#10;Sophie Martin"></textarea>
             <div class="modal-buttons">
                 <button class="btn-cancel" onclick="closeModal()">Annuler</button>
-                <button class="btn-confirm" onclick="confirmRSVP()">Confirmer</button>
+                <button class="btn-confirm" id="confirmBtn" onclick="confirmRSVP()">Confirmer</button>
             </div>
         </div>
     </div>
 
     <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzmHE-6miePsoQHA_xdOkyfWr6-sBEy10E24BR68OlLEVIe82Mpi-RYsm0UypAU0tLpPw/exec';
+
         function openModal() {
             document.getElementById('rsvpModal').classList.add('active');
             document.getElementById('guestNames').value = '';
+            document.getElementById('successMsg').classList.remove('active');
+            document.getElementById('errorMsg').classList.remove('active');
         }
 
         function closeModal() {
             document.getElementById('rsvpModal').classList.remove('active');
         }
 
-        function confirmRSVP() {
+        async function confirmRSVP() {
             const names = document.getElementById('guestNames').value.trim();
-            if (names) {
-                let rsvps = JSON.parse(localStorage.getItem('babyShowerRSVPs') || '[]');
-                rsvps.push({
-                    names: names,
-                    timestamp: new Date().toLocaleString('fr-FR')
+            if (!names) {
+                alert('Veuillez entrer au moins un nom');
+                return;
+            }
+
+            const btn = document.getElementById('confirmBtn');
+            btn.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('names', names);
+
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: formData
                 });
-                localStorage.setItem('babyShowerRSVPs', JSON.stringify(rsvps));
+
                 closeModal();
                 document.getElementById('successMsg').classList.add('active');
+                document.getElementById('guestNames').value = '';
                 setTimeout(() => {
                     document.getElementById('successMsg').classList.remove('active');
-                }, 4000);
-            } else {
-                alert('Veuillez entrer au moins un nom');
+                }, 5000);
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('errorMsg').classList.add('active');
+            } finally {
+                btn.disabled = false;
             }
         }
 

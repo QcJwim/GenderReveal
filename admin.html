@@ -26,7 +26,7 @@
             background: #f5f0eb;
             border-radius: 30px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-            max-width: 600px;
+            max-width: 700px;
             width: 100%;
             overflow: hidden;
         }
@@ -136,8 +136,26 @@
             margin-top: 5px;
         }
 
+        .refresh-btn {
+            display: block;
+            margin: 0 auto 20px;
+            background: #6d4c41;
+            color: #f5f0eb;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Lato', sans-serif;
+            transition: opacity 0.3s;
+        }
+
+        .refresh-btn:hover {
+            opacity: 0.8;
+        }
+
         .guest-list {
-            max-height: 400px;
+            max-height: 450px;
             overflow-y: auto;
             margin-top: 15px;
         }
@@ -147,19 +165,20 @@
             padding: 15px;
             border-radius: 12px;
             margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .guest-item .names {
+        .guest-item .name {
             color: #4e342e;
             font-size: 1.05rem;
             font-weight: 600;
-            white-space: pre-line;
         }
 
         .guest-item .timestamp {
             color: #8d6e63;
-            font-size: 0.8rem;
-            margin-top: 8px;
+            font-size: 0.75rem;
         }
 
         .empty-state {
@@ -173,7 +192,7 @@
             margin-bottom: 15px;
         }
 
-        .btn-back, .btn-clear {
+        .btn-back {
             display: inline-block;
             margin-top: 20px;
             padding: 10px 20px;
@@ -183,9 +202,6 @@
             font-family: 'Lato', sans-serif;
             font-size: 0.9rem;
             transition: all 0.3s;
-        }
-
-        .btn-back {
             background: transparent;
             color: #6d4c41;
             border: 2px solid #a1887f;
@@ -196,19 +212,14 @@
             background: #efebe9;
         }
 
-        .btn-clear {
-            background: #c62828;
-            color: white;
-            border: none;
-            margin-left: 10px;
-        }
-
-        .btn-clear:hover {
-            background: #b71c1c;
-        }
-
         .logout-row {
             text-align: center;
+        }
+
+        .loading {
+            text-align: center;
+            color: #6d4c41;
+            padding: 20px;
         }
 
         .decorations {
@@ -240,6 +251,7 @@
         @media (max-width: 480px) {
             .header h1 { font-size: 1.6rem; }
             .stats { flex-direction: column; }
+            .guest-item { flex-direction: column; text-align: center; gap: 5px; }
         }
     </style>
 </head>
@@ -277,22 +289,25 @@
                 </div>
             </div>
 
+            <button class="refresh-btn" onclick="loadRSVPs()">🔄 Actualiser</button>
+
             <div class="guest-list" id="guestList">
-                <div class="empty-state" id="emptyState">
+                <div class="loading" id="loadingState">Chargement...</div>
+                <div class="empty-state" id="emptyState" style="display:none;">
                     <div class="icon">📭</div>
                     <p>Aucune réponse pour le moment</p>
                 </div>
             </div>
 
             <div class="logout-row">
-                <a class="btn-back" href="baby-shower-invitation.html">← Retour à l'invitation</a>
-                <button class="btn-clear" onclick="clearAll()">Tout effacer</button>
+                <a class="btn-back" href="index.html">← Retour à l'invitation</a>
             </div>
         </div>
     </div>
 
     <script>
         const CORRECT_CODE = 'Tesla210599';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzmHE-6miePsoQHA_xdOkyfWr6-sBEy10E24BR68OlLEVIe82Mpi-RYsm0UypAU0tLpPw/exec';
 
         function checkCode() {
             const code = document.getElementById('adminCode').value;
@@ -307,48 +322,75 @@
         }
 
         function loadRSVPs() {
-            const rsvps = JSON.parse(localStorage.getItem('babyShowerRSVPs') || '[]');
-            const guestList = document.getElementById('guestList');
+            const loading = document.getElementById('loadingState');
             const emptyState = document.getElementById('emptyState');
+            const guestList = document.getElementById('guestList');
             
-            document.getElementById('totalRSVPs').textContent = rsvps.length;
-            
-            let totalGuests = 0;
-            rsvps.forEach(rsvp => {
-                totalGuests += rsvp.names.split('\n').filter(n => n.trim()).length;
-            });
-            document.getElementById('totalGuests').textContent = totalGuests;
-
-            if (rsvps.length === 0) {
-                emptyState.style.display = 'block';
-                return;
-            }
-
+            loading.style.display = 'block';
             emptyState.style.display = 'none';
-            guestList.innerHTML = rsvps.map((rsvp, index) => `
-                <div class="guest-item">
-                    <div class="names">${escapeHtml(rsvp.names)}</div>
-                    <div class="timestamp">Enregistré le ${rsvp.timestamp}</div>
-                </div>
-            `).join('') + `
-                <div class="empty-state" id="emptyState" style="display:none;">
-                    <div class="icon">📭</div>
-                    <p>Aucune réponse pour le moment</p>
-                </div>
-            `;
+            
+            fetch(SCRIPT_URL)
+                .then(response => response.json())
+                .then(data => {
+                    loading.style.display = 'none';
+                    
+                    const rows = data.slice(1);
+                    
+                    document.getElementById('totalRSVPs').textContent = rows.length;
+                    document.getElementById('totalGuests').textContent = rows.length;
+
+                    if (rows.length === 0) {
+                        emptyState.style.display = 'block';
+                        return;
+                    }
+
+                    emptyState.style.display = 'none';
+                    
+                    const groupedByTimestamp = {};
+                    rows.forEach(row => {
+                        const timestamp = row[0];
+                        const name = row[1];
+                        if (!groupedByTimestamp[timestamp]) {
+                            groupedByTimestamp[timestamp] = [];
+                        }
+                        groupedByTimestamp[timestamp].push(name);
+                    });
+
+                    let html = '';
+                    Object.keys(groupedByTimestamp).forEach(timestamp => {
+                        const names = groupedByTimestamp[timestamp];
+                        html += `
+                            <div class="guest-item">
+                                <div class="name">${escapeHtml(names.join(', '))}</div>
+                                <div class="timestamp">${timestamp}</div>
+                            </div>
+                        `;
+                    });
+                    
+                    guestList.innerHTML = html + `
+                        <div class="empty-state" id="emptyState" style="display:none;">
+                            <div class="icon">📭</div>
+                            <p>Aucune réponse pour le moment</p>
+                        </div>
+                    `;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    loading.style.display = 'none';
+                    guestList.innerHTML = `
+                        <div class="empty-state">
+                            <div class="icon">⚠️</div>
+                            <p>Erreur de connexion. Vérifiez le lien du script.</p>
+                        </div>
+                    `;
+                });
         }
 
         function escapeHtml(text) {
+            if (!text) return '';
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
-        }
-
-        function clearAll() {
-            if (confirm('Êtes-vous sûr de vouloir effacer toutes les réponses?')) {
-                localStorage.removeItem('babyShowerRSVPs');
-                loadRSVPs();
-            }
         }
     </script>
 </body>
