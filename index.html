@@ -494,7 +494,36 @@
     </div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzmHE-6miePsoQHA_xdOkyfWr6-sBEy10E24BR68OlLEVIe82Mpi-RYsm0UypAU0tLpPw/exec';
+        const JSONBIN_BASE_URL = 'https://api.jsonbin.io/v3';
+        const JSONBIN_API_KEY = '$2a$10$iOvpoTZQyWqvGVSk4ajVK.q4QqkfDUX.azMC4sy30cu0GrJo8RymS';
+        const JSONBIN_BIN_ID = '69d4412a856a68218906c8c9';
+        const SCRIPT_URL = `${JSONBIN_BASE_URL}/b/${JSONBIN_BIN_ID}/latest`;
+
+        async function fetchGuests() {
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    headers: {
+                        'X-Access-Key': JSONBIN_API_KEY
+                    }
+                });
+                const data = await response.json();
+                return data.record?.guests || [];
+            } catch (error) {
+                console.error('Error fetching guests:', error);
+                return [];
+            }
+        }
+
+        async function saveGuests(guests) {
+            await fetch(`${JSONBIN_BASE_URL}/b/${JSONBIN_BIN_ID}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Access-Key': JSONBIN_API_KEY
+                },
+                body: JSON.stringify({ guests })
+            });
+        }
 
         function openModal() {
             document.getElementById('rsvpModal').classList.add('active');
@@ -518,13 +547,14 @@
             btn.disabled = true;
 
             try {
-                const formData = new FormData();
-                formData.append('names', names);
-
-                await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: formData
-                });
+                const guests = await fetchGuests();
+                const newEntry = {
+                    id: Date.now(),
+                    names: names.split('\n').filter(n => n.trim()),
+                    timestamp: new Date().toLocaleString('fr-FR')
+                };
+                guests.push(newEntry);
+                await saveGuests(guests);
 
                 closeModal();
                 document.getElementById('successMsg').classList.add('active');

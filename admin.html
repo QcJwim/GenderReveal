@@ -307,7 +307,9 @@
 
     <script>
         const CORRECT_CODE = 'Tesla210599';
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzmHE-6miePsoQHA_xdOkyfWr6-sBEy10E24BR68OlLEVIe82Mpi-RYsm0UypAU0tLpPw/exec';
+        const JSONBIN_BASE_URL = 'https://api.jsonbin.io/v3';
+        const JSONBIN_API_KEY = '$2a$10$iOvpoTZQyWqvGVSk4ajVK.q4QqkfDUX.azMC4sy30cu0GrJo8RymS';
+        const JSONBIN_BIN_ID = '69d4412a856a68218906c8c9';
 
         function checkCode() {
             const code = document.getElementById('adminCode').value;
@@ -321,7 +323,7 @@
             }
         }
 
-        function loadRSVPs() {
+        async function loadRSVPs() {
             const loading = document.getElementById('loadingState');
             const emptyState = document.getElementById('emptyState');
             const guestList = document.getElementById('guestList');
@@ -329,61 +331,57 @@
             loading.style.display = 'block';
             emptyState.style.display = 'none';
             
-            fetch(SCRIPT_URL)
-                .then(response => response.json())
-                .then(data => {
-                    loading.style.display = 'none';
-                    
-                    const rows = data.slice(1);
-                    
-                    document.getElementById('totalRSVPs').textContent = rows.length;
-                    document.getElementById('totalGuests').textContent = rows.length;
-
-                    if (rows.length === 0) {
-                        emptyState.style.display = 'block';
-                        return;
+            try {
+                const response = await fetch(`${JSONBIN_BASE_URL}/b/${JSONBIN_BIN_ID}/latest`, {
+                    headers: {
+                        'X-Access-Key': JSONBIN_API_KEY
                     }
+                });
+                const data = await response.json();
+                const guests = data.record?.guests || [];
+                
+                loading.style.display = 'none';
+                
+                document.getElementById('totalRSVPs').textContent = guests.length;
+                let totalPersons = 0;
+                guests.forEach(guest => {
+                    totalPersons += guest.names?.length || 0;
+                });
+                document.getElementById('totalGuests').textContent = totalPersons;
 
-                    emptyState.style.display = 'none';
-                    
-                    const groupedByTimestamp = {};
-                    rows.forEach(row => {
-                        const timestamp = row[0];
-                        const name = row[1];
-                        if (!groupedByTimestamp[timestamp]) {
-                            groupedByTimestamp[timestamp] = [];
-                        }
-                        groupedByTimestamp[timestamp].push(name);
-                    });
+                if (guests.length === 0) {
+                    emptyState.style.display = 'block';
+                    return;
+                }
 
-                    let html = '';
-                    Object.keys(groupedByTimestamp).forEach(timestamp => {
-                        const names = groupedByTimestamp[timestamp];
-                        html += `
-                            <div class="guest-item">
-                                <div class="name">${escapeHtml(names.join(', '))}</div>
-                                <div class="timestamp">${timestamp}</div>
-                            </div>
-                        `;
-                    });
-                    
-                    guestList.innerHTML = html + `
-                        <div class="empty-state" id="emptyState" style="display:none;">
-                            <div class="icon">📭</div>
-                            <p>Aucune réponse pour le moment</p>
-                        </div>
-                    `;
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    loading.style.display = 'none';
-                    guestList.innerHTML = `
-                        <div class="empty-state">
-                            <div class="icon">⚠️</div>
-                            <p>Erreur de connexion. Vérifiez le lien du script.</p>
+                emptyState.style.display = 'none';
+                
+                let html = '';
+                guests.forEach(guest => {
+                    html += `
+                        <div class="guest-item">
+                            <div class="name">${escapeHtml(guest.names?.join(', ') || '')}</div>
+                            <div class="timestamp">${escapeHtml(guest.timestamp || '')}</div>
                         </div>
                     `;
                 });
+                
+                guestList.innerHTML = html + `
+                    <div class="empty-state" id="emptyState" style="display:none;">
+                        <div class="icon">📭</div>
+                        <p>Aucune réponse pour le moment</p>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error:', error);
+                loading.style.display = 'none';
+                guestList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">⚠️</div>
+                        <p>Erreur de connexion. Vérifiez la configuration JSONBin.</p>
+                    </div>
+                `;
+            }
         }
 
         function escapeHtml(text) {
