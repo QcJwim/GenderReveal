@@ -332,11 +332,8 @@
             emptyState.style.display = 'none';
             
             try {
-                const response = await fetch(`${JSONBIN_BASE_URL}/b/${JSONBIN_BIN_ID}/latest`, {
-                    headers: {
-                        'X-Access-Key': JSONBIN_API_KEY
-                    }
-                });
+                const response = await fetch(`${JSONBIN_BASE_URL}/b/${JSONBIN_BIN_ID}/latest`);
+                if (!response.ok) throw new Error('Failed to fetch');
                 const data = await response.json();
                 const guests = data.record?.guests || [];
                 

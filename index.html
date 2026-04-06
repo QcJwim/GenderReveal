@@ -501,11 +501,8 @@
 
         async function fetchGuests() {
             try {
-                const response = await fetch(SCRIPT_URL, {
-                    headers: {
-                        'X-Access-Key': JSONBIN_API_KEY
-                    }
-                });
+                const response = await fetch(`${JSONBIN_BASE_URL}/b/${JSONBIN_BIN_ID}/latest`);
+                if (!response.ok) throw new Error('Failed to fetch');
                 const data = await response.json();
                 return data.record?.guests || [];
             } catch (error) {
@@ -515,14 +512,15 @@
         }
 
         async function saveGuests(guests) {
-            await fetch(`${JSONBIN_BASE_URL}/b/${JSONBIN_BIN_ID}`, {
+            const response = await fetch(`${JSONBIN_BASE_URL}/b/${JSONBIN_BIN_ID}`, {
                 method: 'PUT',
+                mode: 'cors',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'X-Access-Key': JSONBIN_API_KEY
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ guests })
             });
+            return response.ok;
         }
 
         function openModal() {
