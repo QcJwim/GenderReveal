@@ -471,8 +471,6 @@
                     ✗ Erreur lors de l'envoi. Veuillez réessayer.
                 </div>
             </div>
-
-            <a class="admin-link" href="admin.html">🔒</a>
         </div>
         
         <div class="footer">
@@ -494,7 +492,7 @@
     </div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxdIPhaISfFXM1DVoZEUUtJtCvr6LqEX0YKRykQnFKygAZfYSAtckpF0jOKg0rBACZyRg/exec';
+        const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1491166962028646592/Wh-ENBctJZ-2CzEBFwja0Oh_XTa8QshoBk2dbY6Q4ATh3KSlCyu2xE7tgd7axqRmGCiV';
 
         function openModal() {
             document.getElementById('rsvpModal').classList.add('active');
@@ -521,13 +519,32 @@
                 const namesArray = names.split('\n').filter(n => n.trim());
                 const timestamp = new Date().toLocaleString('fr-FR');
 
-                await fetch(SCRIPT_URL, {
+                await fetch(DISCORD_WEBHOOK, {
                     method: 'POST',
-                    mode: 'no-cors',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ names: namesArray, timestamp })
+                    body: JSON.stringify({
+                        embeds: [{
+                            title: '🍼 Nouvelle présence enregistrée!',
+                            color: 11143531,
+                            fields: [
+                                {
+                                    name: '👥 Personnes',
+                                    value: namesArray.join('\n'),
+                                    inline: true
+                                },
+                                {
+                                    name: '📅 Date',
+                                    value: timestamp,
+                                    inline: true
+                                }
+                            ],
+                            footer: {
+                                text: 'Gender Reveal / Shower'
+                            }
+                        }]
+                    })
                 });
 
                 closeModal();
